@@ -1,12 +1,21 @@
 # Exercise 3 Solution
 
-For this exercise, a `PriorityBlockingQueue` is used to impose an ordering rule on the `FutureVaryingTask` tasks to 
-consume. `FutureVaryingTask` is a wrapper of `VaryingTask` and implements the `Comparable` interface which is used 
-by the queue for deciding which task goes first. The Producer takes 1 second to produce a task while the consumer 1.
-5 seconds to consume one. The Producer produces tasks according to a Gaussian distribution: this means that most of 
-the tasks will spawn with a LOW priority while MEDIUM or HIGH tasks will be spawned less frequently.
+For this exercise, a `PriorityBlockingQueue` is used to impose an ordering rule on the `FutureVaryingTask` tasks 
+that are consumed. `FutureVaryingTask` is a wrapper of `VaryingTask` and implements the `Comparable` interface which 
+is used 
+by the queue for deciding which task goes first.
 
-As we can see from the output below, the tasks with lower priorities are consumed first 
+Since the Producer generates tasks faster than the Consumer processes them (1s vs 1.5s), a backlog develops, 
+allowing the priority mechanism to demonstrate its effectiveness. The priority system uses numerical values where lower numbers indicate higher priority:
+
+- HIGH = 0
+- MEDIUM = 1
+- LOW = 2
+
+The Producer produces tasks according to a Gaussian distribution centered around LOW priority. This creates a 
+realistic scenario where urgent tasks are rare.
+
+As we can see from the output below, when a HIGH priority task (`Log 15`) is spawned, it gets consumed before earlier LOW priority tasks, proving the priority mechanism works correctly.
 
 ```
 Spawning task: VaryingTask[priority=MEDIUM, payload='Log 0']
@@ -41,7 +50,8 @@ Spawning task: VaryingTask[priority=LOW, payload='Log 17']
 Consumed: Log 16
 ```
 
-Please note that the current implementation will starve low priority tasks (you can easily verify this by shifting 
-the Gaussian distribution center around the priority HIGH). To solve this, we could use a `ThreadPoolExecutor` that
-is backed up by the implemented `PriorityBlockingQueue`. In this way, dedicated threads will handle low priority 
-tasks too.
+Please note that the current implementation can cause starvation of low-priority tasks when the system is overwhelmed with high-priority tasks (you can easily verify this by shifting 
+the Gaussian distribution center toward the HIGH priority value). To solve this, we could use a `ThreadPoolExecutor` 
+that
+is backed up by the implemented `PriorityBlockingQueue`. In this way, we can tune the number of dedicated threads 
+handling low priority tasks.

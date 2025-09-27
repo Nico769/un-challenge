@@ -8,14 +8,14 @@ public class SessionManager {
     private Map<String, String> sessions = new ConcurrentHashMap<>();
 
     public String login(String userId) {
-        String existingSessionId = sessions.putIfAbsent(userId, UUID.randomUUID().toString());
+        String sessionId = UUID.randomUUID().toString();
+        String existingSessionId = sessions.putIfAbsent(userId, sessionId);
         if (existingSessionId != null) {
             System.out.println("User " + userId + " already logged in with Session ID: " + existingSessionId);
             return existingSessionId;
         }
-        String createdSessionId = sessions.get(userId);
-        System.out.println("Login successful for user " + userId + ". Session ID: " + createdSessionId);
-        return createdSessionId;
+        System.out.println("Login successful for user " + userId + ". Session ID: " + sessionId);
+        return sessionId;
     }
 
     public String logout(String userId) {

@@ -1,4 +1,4 @@
-# Unravel Challenge Setup
+# Challenge Setup
 
 ## Project Structure
 ```
@@ -32,7 +32,7 @@ Before you begin, ensure you have the following tools installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Nico769/un-challenge.git
 ```
 
 ### 2. Import Project in IntelliJ

@@ -14,7 +14,7 @@ public class LogProcessor {
     private Random random = new Random();
 
     public void produceLog(String log) {
-        int nextRounded = (int) Math.round(random.nextGaussian() + VaryingTask.Priority.HIGH.getValue());
+        int nextRounded = (int) Math.round(random.nextGaussian() + VaryingTask.Priority.LOW.getValue());
         int randomPriorityLevel = Math.max(VaryingTask.Priority.HIGH.getValue(),
                 Math.min(VaryingTask.Priority.LOW.getValue(), nextRounded));
         VaryingTask task = new VaryingTask(VaryingTask.Priority.from(randomPriorityLevel), log);

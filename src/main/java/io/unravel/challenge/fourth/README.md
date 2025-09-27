@@ -3,9 +3,9 @@
 For this exercise, I won't include any code since the provided `DeadlockSimulator` is a toy example. Instead, I'll 
 briefly address the example first and then the rest of the exercise.
 
-In the toy example, the deadlock is occurring because the "basic rule" of a circular wait is broken: that is, locks 
-are acquired without a global ordering in mind. To solve the circular wait, one should release the locks inverting 
-the order in which they were acquired, namely:
+In the toy example, the deadlock is occurring because the basic rule of a circular wait is broken: locks are 
+acquired without considering a global ordering strategy. To solve the circular wait, one should release the locks 
+by inverting the order in which they were acquired, namely:
 
 ```
 lock1.acquire()
@@ -23,19 +23,23 @@ short:
   rewrite without breaking the libraries.
 
 For the first point, assuming that there are multiple threads running on the same machine (in other words, we don't 
-consider distributed locks), we might consider assigning an identifier to the shared resource and held a registry of 
-locks. Then, we'd lock the resources in a consistent order based on their identifiers and store the resulting locks
-in a registry (like a `ConcurrentHashMap`). Whenever two threads need to lock the same resource then one of them 
+consider distributed locks), we might consider assigning a unique, comparable identifier to the shared resource and 
+hold a 
+registry of 
+locks. Then, we'd lock the resources in ascending identifier order and store the resulting locks
+in a centralized lock registry (like a `ConcurrentHashMap`). Whenever two threads need to lock the same resource, then 
+one of them 
 will wait until the resource is freed.
 
 For the second point, we might argue that under heavy traffic it's more likely for resource contention to occur, 
-especially if some thread are starved. A good starting point might be profiling the application with JFR (assuming we're ok 
+especially if some thread are starved. A good starting point would be profiling the application with JFR (assuming 
+we're ok 
 with the performance overhead caused by the profiling itself) and analyze the dump in VisualVM. We should focus on 
 the waiting time and the stack trace of the threads hitting the most contended locks. Once those are identified, we 
 could reduce the threads waiting time by using a fair lock (i.e. `ReentrantLock`) or the lock striping technique
 (i.e. instead of locking down the whole resource, we just lock a portion of it, like `ConcurrentHasMap` does).
 
 For the last point, assuming we can't replace the third-party library with something else solving the same task and
-having a better implementation in this regard, a possible solution could be to treat it like a "block box". That is, 
+having a better implementation in this regard, a possible solution could be to treat it like a "black box". That is, 
 the main process could start and monitor a child process which performs the third-party library calls. If the child 
-becomes stuck or is too slow, the main process will kill and restart it while doing the proper resource cleanup. 
+becomes unresponsive or is too slow, the main process will kill and restart it while doing the proper resource cleanup. 

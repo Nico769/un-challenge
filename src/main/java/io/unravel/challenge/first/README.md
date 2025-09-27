@@ -9,10 +9,7 @@ key
 and,
 based on the check outcome, it'd create a new Session ID value and put it into the map.
 
-Now, assuming there are two
-concurrent threads `T_1` and `T_2` both executing the check for the same `userId` and that the map is initially
-empty, they would create a new Session ID and put it into the map; even though these operations are atomic,
-whichever thread runs last is going to overwrite the value put by the other.
+Now, assume two concurrent threads `T_1` and `T_2` both execute the check for the same `userId` when the map is initially empty. Each thread would create a new Session ID and put it into the map. Even though these operations are atomic individually, whichever thread runs last will overwrite the value put by the other.
 
 The most appropriate solution to solve this issue is to use the atomic compound operation `putIfAbsent` of 
 `ConcurrentHashMap`. In fact, this data structure is designed to allow concurrent reads/writes without being 

@@ -1,24 +1,25 @@
 # Exercise 5 Solution
 
-- issues with database
-  connections under high concurrency, particularly during peak loads.
+For the last exercise, I've implemented a simple endpoint `/benchmark` which simulates a simple DB workload with a 2:1 
+read-to-write ratio (the read operation is a table `COUNT`, while the write operation stores a new `Issue`). 
 
-- implement a
-  custom monitoring solution that logs when connections are waiting too long or are
-  being underutilized
+Then, I've used Apache Bench to load test the app (running on a 8 core laptop) under several variations of the 
+number of 
+requests and
+concurrent connections. While running the app, I've monitored the HikariCP connection pool metrics through 
+VisualVM's MBeans tab. As we can see in the following screenshot, the Total connections peaked at 20, indicating that 
+the provided `maximum-pool-size` of 100 is too high: this makes sense since, as suggested by [HikariCP docs]
+(https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing), the pool size should be tuned by starting from 
+this formula:
 
-- optimize pool size based on usage patterns,
-  and avoid simply increasing the pool size to resolve connection bottlenecks.
-
-1. Explain briefly current implementation of BenchmarkController
-2. Mention the ab commands used and the screenshot taken of visualvm. Note that Total connections peaked at 20, indicating that the suggested pool size of Hikari docs is an exact estimate of the max tolearable pool size for my laptop. In fact, `(8 cores * 2) + 1 spindle = 17`, which is very close to 20
-
-| Symptom                        | Possible Cause                                     |
-| ------------------------------ | -------------------------------------------------- |
-| Pool always at max connections | Insufficient pool size, connection leaks, slow DB  |
-| Threads waiting for connection | Pool exhaustion or DB slowness                     |
-| Frequent GC or memory pressure | Connection/resultset leaks, or object accumulation |
-| High CPU usage in JDBC methods | Inefficient SQL queries or overfrequent calls      |
-| Stuck threads in DB methods    | Long-running or blocked DB operations              |
+```
+connections = ((core_count * 2) + effective_spindle_count)
+            = (8 cores * 2) + 1 = 17
+```
 
 ![1](./1.png)
+
+I've also reduced the `connection-timeout` property to 3000 since a shorter timeout avoids long waits. Assuming a 
+more realistic workload (e.g. table joins, diversified read/write patterns, table indexing, etc.), I'd keep repeating 
+the load tests, writing down the app/DB CPU metrics, the HikariCP metrics and the executed queries latencies until a 
+good balance of these is reached.   
